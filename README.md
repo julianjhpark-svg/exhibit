@@ -53,7 +53,7 @@ python scripts/fetch_sources.py
 
 | Path | What's in it |
 |---|---|
-| `data/essay_draft.md` | Synthetic 12-claim essay with 3 planted citation errors |
+| `data/essay_draft.md` | Synthetic 12-claim essay with 4 planted problems (2 partial, 2 unsupported) |
 | `data/answer_key.json` | Ground truth for those 12 claims (this is the A3 evaluation) |
 | `data/sources/` | Where the two arXiv PDFs land (gitignored) |
 | `prompts/` | Claim extraction, verification, quiz prompts |

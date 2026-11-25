@@ -1,8 +1,9 @@
 # Where Long-Context Models Lose the Thread — and Their Citations
 
-Synthetic draft used only for testing Exhibit. It contains three deliberate citation errors and
-one uncited claim. Ground truth lives in `data/answer_key.json`; do not edit a sentence here
-without updating that file.
+Synthetic draft used only for testing Exhibit. It contains four deliberate problems — two
+overstatements/misreadings and two unsupported claims — plus one uncited generalisation.
+Ground truth lives in `data/answer_key.json`; do not edit a sentence here without updating that
+file.
 
 ---
 
