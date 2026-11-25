@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Exhibit — [citation needed]</title>
+<style>
+  :root {
+    --bg: #fbfaf7; --panel: #ffffff; --ink: #17181a; --muted: #6b6f76;
+    --line: #e3e0d8; --accent: #23544a; --accent-soft: #e8f0ed;
+    --ok: #2e7d5b; --part: #a86a12; --bad: #a83b2c; --unk: #6b6f76;
+    --radius: 10px; --pad: 16px;
+    --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --serif: ui-serif, Georgia, "Times New Roman", serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.55 var(--font); }
+  header { padding: 28px 32px 8px; }
+  .brand { display: flex; align-items: baseline; gap: 10px; }
+  .brand h1 { margin: 0; font: 600 26px/1 var(--serif); letter-spacing: -0.02em; }
+  .tag { color: var(--muted); font-size: 13px; }
+  .lede { margin: 6px 0 0; color: var(--muted); }
+  .summary { display: flex; gap: 8px; flex-wrap: wrap; padding: 14px 32px 18px; border-bottom: 1px solid var(--line); }
+  .stat { display: flex; align-items: center; gap: 7px; padding: 6px 11px; border: 1px solid var(--line);
+          border-radius: 999px; background: var(--panel); font-size: 13px; }
+  .stat b { font-size: 14px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; }
+  main { display: grid; grid-template-columns: minmax(320px, 1fr) minmax(320px, 1fr); gap: 0; }
+  section { padding: 18px 24px 40px; }
+  .claims { border-right: 1px solid var(--line); }
+  .pane-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+  .pane-head h2 { margin: 0; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .filter { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .claim { text-align: left; width: 100%; background: var(--panel); border: 1px solid var(--line);
+           border-radius: var(--radius); padding: 12px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .claim:hover { border-color: #cfcabd; }
+  .claim[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .chip { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600;
+          letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; margin-bottom: 7px; }
+  .chip.supported { color: var(--ok); background: #e9f4ef; }
+  .chip.partial { color: var(--part); background: #fbf0dc; }
+  .chip.unsupported { color: var(--bad); background: #faeae7; }
+  .chip.cant_verify { color: var(--unk); background: #eeedea; }
+  blockquote { margin: 9px 0 0; padding: 8px 12px; border-left: 3px solid var(--line);
+               color: #3a3d42; font: italic 14px/1.5 var(--serif); background: #fcfbf8; }
+  .why { margin: 7px 0 0; font-size: 12.5px; color: var(--muted); }
+  #source-text { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+                 padding: 18px 20px; font: 15px/1.7 var(--serif); white-space: pre-wrap; }
+  mark { background: #fff1b8; padding: 1px 2px; border-radius: 2px; }
+  .src-meta { font-size: 12.5px; color: var(--muted); }
+  .hint { padding: 6px 32px 0; font-size: 12.5px; color: var(--muted); }
+  @media (max-width: 860px) { main { grid-template-columns: 1fr; } .claims { border-right: 0; border-bottom: 1px solid var(--line); } }
+</style>
+</head>
+<body>
+  <header>
+    <div class="brand"><h1>Exhibit</h1><span class="tag">[citation needed]</span></div>
+    <p class="lede">Every claim gets an exhibit — or an honest refusal.</p>
+  </header>
+
+  <div class="summary" id="summary" aria-live="polite"></div>
+  <p class="hint" id="hint">Sample data from <code>data/answer_key.json</code>. Click a claim to see its exhibit.</p>
+
+  <main>
+    <section class="claims" aria-labelledby="claims-h">
+      <div class="pane-head">
+        <h2 id="claims-h">Claims</h2>
+        <label class="filter"><input type="checkbox" id="only-bad" /> Only problems</label>
+      </div>
+      <ol id="claim-list"></ol>
+    </section>
+
+    <section class="source" aria-labelledby="source-h">
+      <div class="pane-head">
+        <h2 id="source-h">Exhibit</h2>
+        <span class="src-meta" id="source-meta"></span>
+      </div>
+      <article id="source-text"></article>
+    </section>
+  </main>
+
+<script>
+const API = "http://127.0.0.1:8000";
+
+const PAGE = {
+  source: "Liu et al. (2023) p.1",
+  id: "liu2023",
+  text: `While recent language models have the ability to take long contexts as input, relatively little is known about how well they use longer context. We analyze the performance of language models on two tasks that require identifying relevant information in their input contexts: multi-document question answering and key-value retrieval. We find that performance can degrade significantly when changing the position of relevant information, indicating that current language models do not robustly make use of information in long input contexts. In particular, we observe that performance is often highest when relevant information occurs at the beginning or end of the input context, and significantly degrades when models must access relevant information in the middle of long contexts, even for explicitly long-context models.`
+};
+
+const STATE = {
+  live: false,
+  selected: null,
+  claims: [
+    { claim_id: "C04", verdict: "supported", quote: "performance is often highest when relevant information occurs at the beginning or end of the input context", page: 1 },
+    { claim_id: "C05", verdict: "supported", quote: "significantly degrades when models must access relevant information in the middle of long contexts", page: 1 },
+    { claim_id: "C08", verdict: "partial", quote: null, reason: "Source reports 50% on one dataset; 'most cases' overstates it." },
+    { claim_id: "C10", verdict: "unsupported", quote: null, reason: "No passage reports a 98.1% figure." },
+    { claim_id: "C12", verdict: "cant_verify", quote: null, reason: "Uncited generalisation — no source in the set can settle it." }
+  ]
+};
+
+const LABELS = { supported: "Supported", partial: "Partial", unsupported: "Not supported", cant_verify: "Can't verify" };
+const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+function renderSummary() {
+  const counts = { supported: 0, partial: 0, unsupported: 0, cant_verify: 0 };
+  STATE.claims.forEach(c => counts[c.verdict]++);
+  document.getElementById("summary").innerHTML = Object.entries(counts)
+    .map(([k, n]) => `<span class="stat"><span class="dot" style="background:var(--${{ supported: "ok", partial: "part", unsupported: "bad", cant_verify: "unk" }[k]})"></span><b>${n}</b> ${LABELS[k]}</span>`)
+    .join("");
+}
+
+function renderList() {
+  const onlyBad = document.getElementById("only-bad").checked;
+  const list = STATE.claims.filter(c => !onlyBad || c.verdict !== "supported");
+  document.getElementById("claim-list").innerHTML = list.map(c => `
+    <li>
+      <button class="claim" aria-pressed="${STATE.selected === c.claim_id}" data-id="${c.claim_id}">
+        <span class="chip ${c.verdict}">${LABELS[c.verdict]}</span>
+        <div>${esc(c.claim_id)}${c.source_id ? " · " + esc(c.source_id) : ""}</div>
+        ${c.quote ? `<blockquote>“${esc(c.quote)}”</blockquote>` : ""}
+        ${c.reason ? `<p class="why">${esc(c.reason)}</p>` : ""}
+      </button>
+    </li>`).join("");
+  document.querySelectorAll(".claim").forEach(b => b.addEventListener("click", () => select(b.dataset.id)));
+}
+
+function select(id) {
+  STATE.selected = id;
+  const c = STATE.claims.find(x => x.claim_id === id);
+  renderList();
+  const host = document.getElementById("source-text");
+  document.getElementById("source-meta").textContent = c?.quote ? PAGE.source : "no exhibit found";
+  if (!c?.quote) { host.innerHTML = esc(PAGE.text); return; }
+  const idx = PAGE.text.toLowerCase().indexOf(c.quote.toLowerCase());
+  host.innerHTML = idx < 0
+    ? esc(PAGE.text)
+    : esc(PAGE.text.slice(0, idx)) + "<mark>" + esc(PAGE.text.slice(idx, idx + c.quote.length)) + "</mark>" + esc(PAGE.text.slice(idx + c.quote.length));
+}
+
+async function loadLive() {
+  try {
+    const demo = await fetch(`${API}/api/demo`).then(r => r.json());
+    const res = await fetch(`${API}/api/check`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ essay: demo.essay, sources: demo.sources })
+    }).then(r => r.json());
+    if (res.claims?.length) {
+      STATE.claims = res.claims;
+      STATE.live = true;
+      document.getElementById("hint").textContent = "Live results from the API (mock verifier).";
+    }
+  } catch { /* backend not running — the sample stays on screen */ }
+  renderSummary(); renderList(); select(STATE.claims[0].claim_id);
+}
+
+document.getElementById("only-bad").addEventListener("change", renderList);
+renderSummary(); renderList(); select("C04");
+loadLive();
+</script>
+</body>
+</html>

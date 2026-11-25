@@ -1,0 +1,21 @@
+# secrets
+.env
+*.key
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# node (if the frontend grows up)
+node_modules/
+
+# test material (downloaded, not redistributed)
+data/sources/*.pdf
+
+# generated
+eval/results.md
+runs/
+.DS_Store
