@@ -47,6 +47,10 @@
   .why { margin: 7px 0 0; font-size: 12.5px; color: var(--muted); }
   #source-text { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
                  padding: 18px 20px; font: 15px/1.7 var(--serif); white-space: pre-wrap; }
+  .empty-exhibit { border: 1px dashed #d8d3c6; border-radius: var(--radius); padding: 22px;
+                   background: #fcfbf8; font-family: var(--font); color: var(--muted); }
+  .empty-exhibit strong { display: block; color: var(--ink); font-size: 15px; margin-bottom: 6px; }
+  .empty-exhibit p { margin: 0; font-size: 13.5px; }
   mark { background: #fff1b8; padding: 1px 2px; border-radius: 2px; }
   .src-meta { font-size: 12.5px; color: var(--muted); }
   .hint { padding: 6px 32px 0; font-size: 12.5px; color: var(--muted); }
@@ -127,17 +131,37 @@ function renderList() {
   document.querySelectorAll(".claim").forEach(b => b.addEventListener("click", () => select(b.dataset.id)));
 }
 
+function highlightInto(host, text, quote) {
+  const pattern = quote.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "\\s+");
+  const match = text.match(new RegExp(pattern, "i"));
+  if (!match) { host.innerHTML = esc(text); return false; }
+  const start = match.index, end = start + match[0].length;
+  host.innerHTML = esc(text.slice(0, start)) + "<mark>" + esc(text.slice(start, end)) + "</mark>" + esc(text.slice(end));
+  return true;
+}
+
 function select(id) {
   STATE.selected = id;
   const c = STATE.claims.find(x => x.claim_id === id);
   renderList();
   const host = document.getElementById("source-text");
-  document.getElementById("source-meta").textContent = c?.quote ? PAGE.source : "no exhibit found";
-  if (!c?.quote) { host.innerHTML = esc(PAGE.text); return; }
-  const idx = PAGE.text.toLowerCase().indexOf(c.quote.toLowerCase());
-  host.innerHTML = idx < 0
-    ? esc(PAGE.text)
-    : esc(PAGE.text.slice(0, idx)) + "<mark>" + esc(PAGE.text.slice(idx, idx + c.quote.length)) + "</mark>" + esc(PAGE.text.slice(idx + c.quote.length));
+  const meta = document.getElementById("source-meta");
+
+  if (!c?.quote) {
+    meta.textContent = "no exhibit";
+    const heading = (c?.verdict === "supported" || c?.verdict === "partial")
+      ? "No quote returned for this claim."
+      : "No passage supports this claim.";
+    host.innerHTML = `<div class="empty-exhibit"><strong>${esc(heading)}</strong>
+      <p>${esc(c?.reason || "Nothing in the attached sources establishes it.")}</p></div>`;
+    return;
+  }
+
+  const text = c.page_text || PAGE.text;
+  meta.textContent = c.source_id ? `${c.source_id}${c.page ? " p." + c.page : ""}` : PAGE.source;
+  if (!highlightInto(host, text, c.quote)) {
+    meta.textContent += " · quote not found on this page";
+  }
 }
 
 async function loadLive() {
@@ -150,10 +174,15 @@ async function loadLive() {
     if (res.claims?.length) {
       STATE.claims = res.claims;
       STATE.live = true;
-      document.getElementById("hint").textContent = "Live results from the API (mock verifier).";
+      const s = res.stats || {};
+      document.getElementById("hint").textContent =
+        `Live results: ${s.total ?? res.claims.length} claims` +
+        (s.quote_ok_before_guard != null ? `, ${s.quote_ok_before_guard} verbatim quotes before the guard` : "") +
+        (s.downgraded ? `, ${s.downgraded} downgraded` : "") +
+        (res.warnings?.length ? ` · ${res.warnings[0]}` : "");
     }
   } catch { /* backend not running — the sample stays on screen */ }
-  renderSummary(); renderList(); select(STATE.claims[0].claim_id);
+  renderSummary(); renderList(); if (STATE.claims.length) select(STATE.claims[0].claim_id);
 }
 
 document.getElementById("only-bad").addEventListener("change", renderList);

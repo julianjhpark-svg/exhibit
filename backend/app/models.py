@@ -13,6 +13,8 @@ class Source(BaseModel):
     pages: int | None = None
     # "upload" | "url" | "paste" — shown in the UI, and useful in the limitations section
     kind: Literal["upload", "url", "paste"] = "upload"
+    # repo-relative path, e.g. "data/sources/2307.03172.pdf"
+    pdf: str | None = None
 
 
 class Passage(BaseModel):
@@ -35,6 +37,8 @@ class VerdictOut(BaseModel):
     reason: str | None = None
     # true when verify.enforce() had to override the model's claim of support
     downgraded: bool = False
+    # full text of the cited page, so the UI can highlight without a second request
+    page_text: str | None = None
 
 
 class CheckRequest(BaseModel):

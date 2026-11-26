@@ -17,9 +17,9 @@ information changes. Accuracy is often highest when the relevant information app
 beginning or end of the context. It falls when the model must access information in the middle of
 a long context, even for models that were explicitly built for long inputs.
 
-This matters for citation-heavy writing, where the sentence that supports a claim may sit
-anywhere in a forty-page paper. Gao et al. (2023) introduce ALCE, which they describe as the first
-benchmark for automatic evaluation of citations in model-generated text. ALCE measures fluency,
+For citation-heavy writing, where the supporting sentence may sit anywhere in a forty-page paper,
+Gao et al. (2023) introduce ALCE, which they describe as the first benchmark for automatic
+evaluation of citations in model-generated text. ALCE measures fluency,
 correctness, and citation quality, and the authors report that these metrics correlate strongly
 with human judgments. Even the best systems fail to provide complete citation support in most
 cases (Gao et al., 2023).

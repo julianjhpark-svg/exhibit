@@ -57,10 +57,11 @@ python scripts/fetch_sources.py
 | `data/answer_key.json` | Ground truth for those 12 claims (this is the A3 evaluation) |
 | `data/sources/` | Where the two arXiv PDFs land (gitignored) |
 | `prompts/` | Claim extraction, verification, quiz prompts |
-| `backend/app/` | FastAPI skeleton: models, PDF extraction, quote-matching |
+| `backend/app/` | FastAPI app: `main` (API + pipeline), `claims`, `retrieve` (BM25), `verifier`, `verify` (the guard), `extract` (PDF + scan detection), `llm` (provider swap, incl. Prune) |
 | `frontend/index.html` | Single-file UI, no build step |
 | `eval/run_eval.py` | Scores the app against the answer key, writes `eval/results.md` |
 | `EVIDENCE.md` | Rubric evidence tables — **fill this in as you go** |
+| `docs/STEPS.md` | The executable runbook: 13 steps, owner, estimate, "done when" |
 | `docs/PLAN.md` | Roles, 72-hour plan, cut list |
 | `docs/DEMO_SCRIPT.md` | Beat-by-beat video script |
 | `docs/SUBMISSION.md` | The five Devpost answers, as prompts to fill |

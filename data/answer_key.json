@@ -62,7 +62,7 @@
     },
     {
       "id": "C06",
-      "text": "Gao et al. (2023) introduce ALCE, which they describe as the first benchmark for automatic evaluation of citations in model-generated text.",
+      "text": "For citation-heavy writing, where the supporting sentence may sit anywhere in a forty-page paper, Gao et al. (2023) introduce ALCE, which they describe as the first benchmark for automatic evaluation of citations in model-generated text.",
       "expected": "supported",
       "expected_source": "gao2023",
       "quote_must_contain": ["first benchmark"],
